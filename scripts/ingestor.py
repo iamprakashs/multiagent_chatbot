@@ -21,9 +21,9 @@ def main():
     logger.info("Starting property data ingestion")
     
     try:
-        logger.info("Processing first 1000 rows of property_data.csv")
+        logger.info("Processing first 10000 rows of property_data.csv")
         processor = DataProcessor()
-        df = processor.prepare_property_data(settings.PROPERTY_DATA_FILE, max_rows=1000)
+        df = processor.prepare_property_data(settings.PROPERTY_DATA_FILE, max_rows=10000)
         dataframe_count = len(df)
         logger.info(f"Processed {dataframe_count} rows from CSV")
         

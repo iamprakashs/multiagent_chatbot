@@ -8,7 +8,7 @@ from .client import QdrantVectorClient
 class DataIngestion:
     """Simple data ingestion class for CSV/Excel files"""
     
-    def __init__(self, qdrant_url: str = "http://localhost:6333", api_key: str = None, collection_name: str = "documents", embedding_model: str = "all-MiniLM-L6-v2", vector_size: int = 384):
+    def __init__(self, qdrant_url: str = "http://localhost:6333", api_key: str = None, collection_name: str = "documents", embedding_model: str = "all-MiniLM-L6-v2", vector_size: int = None):
         self.client = QdrantVectorClient(url=qdrant_url, api_key=api_key, collection_name=collection_name, embedding_model=embedding_model, vector_size=vector_size)
         self.supported_formats = ['.csv', '.xlsx', '.xls']
     
@@ -64,11 +64,6 @@ class DataIngestion:
         
         if recreate_collection:
             self.client.create_collection()
-        
-        # Fit the vectorizer on all text data first
-        print("Fitting vectorizer on all text data...")
-        all_texts = [doc['text'] for doc in documents]
-        self.client.fit_vectorizer(all_texts)
         
         self.client.insert_documents(documents)
         print(f"Successfully ingested {len(documents)} documents from DataFrame")

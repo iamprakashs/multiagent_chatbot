@@ -1,9 +1,7 @@
 from qdrant_client import QdrantClient
 from qdrant_client.http import models
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.preprocessing import normalize
+from sentence_transformers import SentenceTransformer
 from typing import List, Dict, Any
-import numpy as np
 import os
 
 
@@ -14,12 +12,12 @@ class QdrantParams:
 class QdrantVectorClient:
     """Simple Qdrant client for vector search operations"""
     
-    def __init__(self, url: str = "http://localhost:6333", api_key: str = None, collection_name: str = "documents", embedding_model: str = "tfidf", vector_size: int = 100):
+    def __init__(self, url: str = "http://localhost:6333", api_key: str = None, collection_name: str = "documents", embedding_model: str = "all-MiniLM-L6-v2", vector_size: int = None):
         self.client = QdrantClient(url=url, api_key=api_key)
         self.collection_name = collection_name
-        self.vectorizer = TfidfVectorizer(max_features=vector_size, stop_words='english')
-        self.vector_size = vector_size
-        self._is_fitted = False
+        self.model = SentenceTransformer(embedding_model)
+        self.vector_size = self.model.get_sentence_embedding_dimension()
+        print(f"Initialized with model: {embedding_model}, vector size: {self.vector_size}")
     
     def create_collection(self):
         """Create a new collection with vector configuration"""
@@ -36,19 +34,9 @@ class QdrantVectorClient:
             print(f"Error creating collection: {e}")
             return False
     
-    def fit_vectorizer(self, texts: List[str]):
-        """Fit the TF-IDF vectorizer on the provided texts"""
-        self.vectorizer.fit(texts)
-        self._is_fitted = True
-    
     def get_embeddings(self, text: str) -> List[float]:
-        """Convert text to vector embedding using TF-IDF"""
-        if not self._is_fitted:
-            raise ValueError("Vectorizer not fitted. Call fit_vectorizer() first.")
-        
-        vector = self.vectorizer.transform([text])
-        normalized_vector = normalize(vector, norm='l2')
-        return normalized_vector.toarray()[0].tolist()
+        """Convert text to vector embedding using sentence transformers - no fitting needed!"""
+        return self.model.encode(text).tolist()
     
     def insert_documents(self, documents: List[Dict[str, Any]], batch_size: int = 100):
         """Insert documents with their embeddings into the collection in batches"""

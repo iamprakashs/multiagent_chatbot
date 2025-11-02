@@ -19,7 +19,7 @@ class DataProcessor:
             combined_text = combined_text + separator + df[col].astype(str)
         return combined_text
     
-    def prepare_property_data(self, csv_file: str = "property_data.csv", max_rows: int = 1000) -> pd.DataFrame:
+    def prepare_property_data(self, csv_file: str = "property_data.csv", max_rows: int = 10000) -> pd.DataFrame:
         """Process property data and create text content for embedding (in-memory only)"""
         input_file = self.input_dir / csv_file
         
