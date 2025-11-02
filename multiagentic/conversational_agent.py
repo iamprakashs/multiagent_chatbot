@@ -16,24 +16,38 @@ class ConversationalAgent:
 Here are the search results:
 {data}
 
-Please provide a friendly, conversational response that:
-1. Acknowledges their search query
+Please provide a complete, friendly, conversational response that:
+1. Acknowledges their search query warmly
 2. Summarizes the key findings in an easy-to-understand way
-3. Highlights the most relevant properties
+3. Highlights the most relevant properties with specific details
 4. Mentions important details like property type, location, price, and features
 5. Uses a warm, professional tone
-6. Offers to help with more details if needed
+6. Provides actionable next steps or offers to help with more details
+7. IMPORTANT: Complete your response fully - don't cut off mid-sentence
+
+Make sure to finish your thoughts completely and end with a helpful closing statement.
 
 Response:"""
         
-        completion = self.client.chat.completions.create(
-            model="llama-3.1-8b-instant",
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0.7,
-            max_tokens=300
-        )
-        
-        return completion.choices[0].message.content.strip()
+        try:
+            completion = self.client.chat.completions.create(
+                model="llama-3.1-8b-instant",
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.7,
+                max_tokens=1000,
+                stop=None  # Allow complete responses
+            )
+            
+            response = completion.choices[0].message.content.strip()
+            
+            # Check if response seems cut off and add a completion note if needed
+            if not response.endswith(('.', '!', '?', '"', "'")):
+                response += "\n\nWould you like me to provide more details about any of these properties?"
+                
+            return response
+            
+        except Exception as e:
+            return f"I apologize, but I encountered an issue while processing your request: {str(e)}. Please try again or contact support if the problem persists."
 
 def make_search_conversational(query: str, data: List[Dict]) -> str:
     agent = ConversationalAgent()
